@@ -90,7 +90,7 @@ void AFirstPersonCharacter::BeginPlay()
 		Gun->AnimInstance = Mesh1P->GetAnimInstance();
 		if (InputComponent)
 		{
-			InputComponent->BindAction("Fire", IE_Pressed, Gun, &APracticeGun::OnFire);
+			InputComponent->BindAction("Fire", IE_Pressed, Gun, &APracticeGun::Fire);
 		}
 		
 	}
@@ -158,7 +158,7 @@ void AFirstPersonCharacter::BeginTouch(const ETouchIndex::Type FingerIndex, cons
 	{
 		if (Gun)
 		{
-			Gun->OnFire();
+			Gun->Fire();
 		}
 	}
 	TouchItem.bIsPressed = true;

@@ -31,8 +31,8 @@ public:
 	// Sets default values for this actor's properties
 	APracticeGun();
 
-
-	void OnFire();
+	UFUNCTION(BlueprintCallable, Category = Firing)
+	void Fire();
 
 protected:
 	// Called when the game starts or when spawned

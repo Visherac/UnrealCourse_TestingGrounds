@@ -44,7 +44,7 @@ void APracticeGun::Tick(float DeltaTime)
 
 
 
-void APracticeGun::OnFire()
+void APracticeGun::Fire()
 {
 	// try and fire a projectile
 	if (ProjectileClass != NULL)
