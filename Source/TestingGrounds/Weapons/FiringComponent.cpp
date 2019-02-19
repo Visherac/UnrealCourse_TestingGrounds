@@ -38,6 +38,8 @@ void UFiringComponent::Fire()
 {
 	FActorSpawnParameters ActorSpawnParams;
 	ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-
-	GetWorld()->SpawnActor<ABallProjectile>(ProjectileClass, GetComponentLocation(), GetComponentRotation(), ActorSpawnParams);
+	if (ProjectileClass)
+	{
+		auto projectile = GetWorld()->SpawnActor<ABallProjectile>(ProjectileClass, GetComponentLocation(), GetComponentRotation(), ActorSpawnParams);
+	}
 }
