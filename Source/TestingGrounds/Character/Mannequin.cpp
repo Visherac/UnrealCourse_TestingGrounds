@@ -74,13 +74,16 @@ void AMannequin::Tick(float DeltaTime)
 void AMannequin::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TPMeshGunSocket);
+	
 }
 
 void AMannequin::UnPossessed()
 {
 	Super::UnPossessed();
-
+	if (Gun != nullptr)
+	{
+		Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TPMeshGunSocket);
+	}
 }
 
 void AMannequin::PullTrigger()
