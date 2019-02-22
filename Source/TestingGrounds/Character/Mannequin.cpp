@@ -40,8 +40,18 @@ void AMannequin::BeginPlay()
 	if (ensure(GunBlueprint))
 	{
 		Gun = GetWorld()->SpawnActor<APracticeGun>(GunBlueprint);
-		Gun->AttachToComponent(FPMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), FPMeshGunSocket);
-		Gun->AnimInstance = FPMesh->GetAnimInstance();
+		
+		if (IsPlayerControlled())
+		{
+			Gun->AttachToComponent(FPMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), FPMeshGunSocket);
+		}
+		else
+		{
+			Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TPMeshGunSocket);
+		}
+
+		Gun->FPAnimInstance = FPMesh->GetAnimInstance();
+		Gun->TPAnimInstance = GetMesh()->GetAnimInstance();
 
 		if (InputComponent != nullptr)
 		{
@@ -64,6 +74,12 @@ void AMannequin::Tick(float DeltaTime)
 void AMannequin::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TPMeshGunSocket);
+}
+
+void AMannequin::UnPossessed()
+{
+	Super::UnPossessed();
 
 }
 

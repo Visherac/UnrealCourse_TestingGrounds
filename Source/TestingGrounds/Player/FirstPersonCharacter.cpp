@@ -87,7 +87,7 @@ void AFirstPersonCharacter::BeginPlay()
 	if (ensure(Gun)) 
 	{
 		Gun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
-		Gun->AnimInstance = Mesh1P->GetAnimInstance();
+		Gun->FPAnimInstance = Mesh1P->GetAnimInstance();
 		if (InputComponent)
 		{
 			InputComponent->BindAction("Fire", IE_Pressed, Gun, &APracticeGun::Fire);
