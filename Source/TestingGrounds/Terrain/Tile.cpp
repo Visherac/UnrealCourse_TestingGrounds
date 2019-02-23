@@ -26,36 +26,58 @@ void ATile::Tick(float DeltaTime)
 
 }
 
-void ATile::PlaceActors(TSubclassOf<AActor> ToSpawn, int NumToSpawn)
+void ATile::PlaceActors(TSubclassOf<AActor> ToSpawn, int32 NumToSpawn)
+{
+	for(int32 i = 0; i < NumToSpawn; i++)
+	{
+		FVector SpawnLocation;
+		if (FindEmptyLocation(SpawnLocation, 500.0f, 10))
+		{
+			PlaceActor(ToSpawn, SpawnLocation);
+		}
+	}
+}
+
+AActor* ATile::PlaceActor(TSubclassOf<AActor> ToSpawn, FVector Location)
+{
+
+	AActor* Spawned = GetWorld()->SpawnActor<AActor>(ToSpawn, Location, FRotator::ZeroRotator);
+	Spawned->AttachToActor(this, FAttachmentTransformRules(EAttachmentRule::KeepWorld, false));
+	return Spawned;
+}
+
+bool ATile::FindEmptyLocation(FVector& OutLocation, float Radius = 500, int32 MaxAttempts = 10)
 {
 	FVector Min(0, -2000, 0);
 	FVector Max(4000, 2000, 0);
 	FBox Bounds(Min, Max);
-	
-	for(int32 i = 0; i < NumToSpawn; i++)
+	for (int32 inc = 0; inc < MaxAttempts; inc++)
 	{
 		FVector SpawnLocation = FMath::RandPointInBox(Bounds) + GetActorLocation();
-		FHitResult HitResult;
-		bool WasHit = GetWorld()->SweepSingleByChannel(
-			HitResult, 
-			SpawnLocation, 
-			SpawnLocation, 
-			FQuat::Identity, 
-			ECollisionChannel::ECC_GameTraceChannel2, //custom spawn channel
-			FCollisionShape::MakeSphere(300)
-		);
-		if (WasHit)
+		if (IsValidLocation(SpawnLocation, Radius))
 		{
-			DrawDebugSphere(GetWorld(), SpawnLocation, 300, 8, FColor::Red, true);
+			OutLocation = SpawnLocation;
+			return true;
 		}
-		else
-		{
-			DrawDebugSphere(GetWorld(), SpawnLocation, 300, 8, FColor::Green, true);
-		}
-		AActor* Spawned = GetWorld()->SpawnActor<AActor>(ToSpawn, SpawnLocation, FRotator::ZeroRotator);
-		Spawned->AttachToActor(this, FAttachmentTransformRules(EAttachmentRule::KeepWorld, false));
-
-
 	}
+	return false;
+
+}
+
+bool ATile::IsValidLocation(FVector Location, float Radius)
+{
+	FHitResult HitResult;
+	bool WasHit = GetWorld()->SweepSingleByChannel(
+		HitResult,
+		Location,
+		Location,
+		FQuat::Identity,
+		ECollisionChannel::ECC_GameTraceChannel2, //custom spawn channel
+		FCollisionShape::MakeSphere(Radius)
+	);
+	FColor ResultColor = WasHit ? FColor::Red : FColor::Green;
+	DrawDebugSphere(GetWorld(), Location, Radius, 8, ResultColor, true);
+	
+	return !WasHit;
 }
 
