@@ -6,6 +6,28 @@
 #include "GameFramework/Actor.h"
 #include "Tile.generated.h"
 
+FHitResult;
+
+USTRUCT(BlueprintType)
+struct FMeshDetails
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setup)
+	UStaticMesh* DetailMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Setup)
+	int32 NumInstances;
+
+	FMeshDetails()
+	{
+		DetailMesh = nullptr;
+		NumInstances = 0;
+	}
+};
+
+
+
 UCLASS()
 class TESTINGGROUNDS_API ATile : public AActor
 {
@@ -24,10 +46,19 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable, Category = Setup)
-	void PlaceActors(TSubclassOf<AActor> ToSpawn, int32 NumToSpawn);
+	void PlaceActors(TSubclassOf<AActor> ToSpawn, int32 MinSpawnCount =1, int32 MaxSpawnCount =1, float MinScaleValue =1.0f, float MaxScaleValue = 1.0f);
 	
 private:
-	AActor* PlaceActor(TSubclassOf<AActor> ToSpawn, FVector Location);
+	
+	UPROPERTY(EditDefaultsOnly, Category = Setup)
+	TArray<FMeshDetails> DetailMeshes;
+
+	UPROPERTY(VisibleDefaultsOnly)
+	TArray<class UHierarchicalInstancedStaticMeshComponent*> DetailComponents;
+
+	AActor* PlaceActor(TSubclassOf<AActor> ToSpawn, FVector Location, FRotator Rotation, float scale);
+
+	FVector GetRandomLocation();
 
 	bool FindEmptyLocation(FVector& OutLocation, float Radius, int32 MaxAttempts);
 
