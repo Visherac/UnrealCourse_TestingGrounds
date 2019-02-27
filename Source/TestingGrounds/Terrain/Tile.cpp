@@ -5,6 +5,7 @@
 #include "DrawDebugHelpers.h"
 #include "components/HierarchicalInstancedStaticMeshComponent.h"
 #include "engine/StaticMesh.h"
+#include "../ActorPool.h"
 
 // Sets default values
 ATile::ATile()
@@ -30,7 +31,7 @@ void ATile::BeginPlay()
 			auto DetailComponent = NewObject<UHierarchicalInstancedStaticMeshComponent>(this, Detail.DetailMesh->GetFName());
 			DetailComponent->RegisterComponent();
 			DetailComponent->OnComponentCreated();
-			DetailComponent->AttachTo(GetRootComponent());
+			DetailComponent->AttachToComponent(GetRootComponent(), FAttachmentTransformRules(EAttachmentRule::KeepRelative,false));
 			DetailComponents.Add(DetailComponent);
 			DetailComponent->SetStaticMesh(Detail.DetailMesh);
 			for (int32 InstanceInc = 0; InstanceInc < Detail.NumInstances; InstanceInc++)
@@ -50,6 +51,11 @@ void ATile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void ATile::SetNavMeshPool(UActorPool* ActorPool)
+{
+	NavPool = ActorPool;
 }
 
 void ATile::PlaceActors(TSubclassOf<AActor> ToSpawn, int32 MinSpawnCount, int32 MaxSpawnCount , float MinScaleValue , float MaxScaleValue)

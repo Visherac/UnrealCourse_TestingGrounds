@@ -6,7 +6,6 @@
 #include "GameFramework/Actor.h"
 #include "Tile.generated.h"
 
-FHitResult;
 
 USTRUCT(BlueprintType)
 struct FMeshDetails
@@ -27,6 +26,7 @@ struct FMeshDetails
 };
 
 
+class UActorPool;
 
 UCLASS()
 class TESTINGGROUNDS_API ATile : public AActor
@@ -37,9 +37,16 @@ public:
 	// Sets default values for this actor's properties
 	ATile();
 
+	UFUNCTION(BlueprintCallable, Category = Setup)
+	void SetNavMeshPool(UActorPool* ActorPool);
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UPROPERTY(VisibleAnywhere, Category = Setup)
+	class UActorPool* NavPool = nullptr;
 
 public:	
 	// Called every frame
