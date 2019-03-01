@@ -16,15 +16,27 @@ UActorPool::UActorPool()
 
 AActor* UActorPool::Checkout()
 {
-	return nullptr;
+	UE_LOG(LogTemp, Warning, TEXT("NavMesh checked out"))
+	if (Storage.Num() <= 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("[%s] Checkout Requested but nothing in Pool"), *GetName())
+		return nullptr;
+	}
+	return Storage.Pop();
+	
 }
 
 void UActorPool::Return(AActor* ActorToReturn)
 {
-	Add(ActorToReturn);
+	if (ActorToReturn != nullptr)
+	{
+		Add(ActorToReturn);
+	}
+	
 }
 
 void UActorPool::Add(AActor* ActorToAdd)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Found Nav Mesh: %s"), *ActorToAdd->GetName())
+	UE_LOG(LogTemp, Warning, TEXT("Added Actor To Pool: %s"), *ActorToAdd->GetName())
+	Storage.Push(ActorToAdd);
 }

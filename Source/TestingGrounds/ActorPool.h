@@ -20,6 +20,8 @@ public:
 	void Return(AActor*);
 
 	void Add(AActor*);
-		
+	
+private:
+	TArray<AActor*> Storage;
 	
 };

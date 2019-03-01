@@ -6,17 +6,16 @@
 #include "components/HierarchicalInstancedStaticMeshComponent.h"
 #include "engine/StaticMesh.h"
 #include "../ActorPool.h"
+#include "AI/Navigation/NavMeshBoundsVolume.h"
+#include "AI/Navigation/NavigationSystem.h"
 
 // Sets default values
 ATile::ATile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-
-	
-
-
+	MinBounds = FVector(0, -2000, 0);
+	MaxBounds = FVector(4000, 2000, 0);
 }
 
 // Called when the game starts or when spawned
@@ -40,10 +39,18 @@ void ATile::BeginPlay()
 				FVector RandomLocation = GetRandomLocation();
 				DetailComponent->AddInstance(FTransform(RandomRotation, RandomLocation, FVector(1)));
 			}
-			
 		}
 	}
 
+}
+
+void ATile::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	if (NavPool != nullptr && NavMesh != nullptr)
+	{
+		NavPool->Return(NavMesh);
+	}
 }
 
 // Called every frame
@@ -56,6 +63,17 @@ void ATile::Tick(float DeltaTime)
 void ATile::SetNavMeshPool(UActorPool* ActorPool)
 {
 	NavPool = ActorPool;
+	NavMesh = NavPool->Checkout();
+	if (NavMesh == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s Can't Assign Nav Mesh, pool is empty"), *GetName())
+		return;
+	}
+	
+	auto SpawnMiddle = MinBounds + ((MaxBounds - MinBounds) / 2.0f);
+	NavMesh->SetActorLocation(GetActorLocation() + SpawnMiddle);
+	GetWorld()->GetNavigationSystem()->Build();
+	
 }
 
 void ATile::PlaceActors(TSubclassOf<AActor> ToSpawn, int32 MinSpawnCount, int32 MaxSpawnCount , float MinScaleValue , float MaxScaleValue)
@@ -94,9 +112,7 @@ AActor* ATile::PlaceActor(TSubclassOf<AActor> ToSpawn, FVector Location, FRotato
 
 FVector ATile::GetRandomLocation()
 {
-	FVector Min(0, -2000, 0);
-	FVector Max(4000, 2000, 0);
-	FBox Bounds(Min, Max);
+	FBox Bounds(MinBounds, MaxBounds);
 	FVector RandomLocation = FMath::RandPointInBox(Bounds);
 	return RandomLocation;
 }

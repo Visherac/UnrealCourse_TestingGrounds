@@ -45,8 +45,17 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 	UPROPERTY(VisibleAnywhere, Category = Setup)
 	class UActorPool* NavPool = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, Category = Spawning)
+	FVector MinBounds;
+	
+	UPROPERTY(EditDefaultsOnly, Category = Spawning)
+	FVector MaxBounds;
+
 
 public:	
 	// Called every frame
@@ -56,7 +65,8 @@ public:
 	void PlaceActors(TSubclassOf<AActor> ToSpawn, int32 MinSpawnCount =1, int32 MaxSpawnCount =1, float MinScaleValue =1.0f, float MaxScaleValue = 1.0f);
 	
 private:
-	
+	AActor* NavMesh = nullptr;
+
 	UPROPERTY(EditDefaultsOnly, Category = Setup)
 	TArray<FMeshDetails> DetailMeshes;
 
