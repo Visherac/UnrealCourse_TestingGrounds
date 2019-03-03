@@ -6,6 +6,27 @@
 #include "GameFramework/Actor.h"
 #include "Tile.generated.h"
 
+USTRUCT(BlueprintType)
+struct FSpawnPosition
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SETUP)
+	FVector Location;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SETUP)
+	float Rotation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SETUP)
+	float Scale;
+
+	FSpawnPosition()
+	{
+		Location = FVector();
+		Rotation = 0.0f;
+		Scale = 1.0f;
+	}
+};
 
 USTRUCT(BlueprintType)
 struct FMeshDetails
@@ -62,7 +83,11 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable, Category = Setup)
-	void PlaceActors(TSubclassOf<AActor> ToSpawn, int32 MinSpawnCount =1, int32 MaxSpawnCount =1, float MinScaleValue =1.0f, float MaxScaleValue = 1.0f);
+	TArray<AActor*> PlaceActors(TSubclassOf<AActor> ToSpawn, int32 MinSpawnCount =1, int32 MaxSpawnCount =1, float MinScaleValue =1.0f, float MaxScaleValue = 1.0f);
+
+	UFUNCTION(BlueprintCallable, Category = Setup)
+	TArray<APawn*> PlaceAIPawns(TSubclassOf<APawn> ToSpawn, int32 MinSpawnCount, int32 MaxSpawnCount);
+
 	
 private:
 	AActor* NavMesh = nullptr;
@@ -73,7 +98,10 @@ private:
 	UPROPERTY(VisibleDefaultsOnly)
 	TArray<class UHierarchicalInstancedStaticMeshComponent*> DetailComponents;
 
-	AActor* PlaceActor(TSubclassOf<AActor> ToSpawn, FVector Location, FRotator Rotation, float scale);
+	template<class T>
+	TArray<T*> RandomlyPlaceObjects(TSubclassOf<T> ToSpawn, int32 MinSpawnCount = 1, int32 MaxSpawnCount = 1, float MinScaleValue = 1.0f, float MaxScaleValue = 1.0f);
+
+	AActor* PlaceActor(TSubclassOf<AActor> ToSpawn, const FSpawnPosition& Position);
 
 	FVector GetRandomLocation();
 
@@ -82,3 +110,4 @@ private:
 	bool IsValidLocation(FVector Location, float Radius);
 
 };
+

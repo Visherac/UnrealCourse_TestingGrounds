@@ -76,37 +76,59 @@ void ATile::SetNavMeshPool(UActorPool* ActorPool)
 	
 }
 
-void ATile::PlaceActors(TSubclassOf<AActor> ToSpawn, int32 MinSpawnCount, int32 MaxSpawnCount , float MinScaleValue , float MaxScaleValue)
+TArray<AActor*> ATile::PlaceActors(TSubclassOf<AActor> ToSpawn, int32 MinSpawnCount, int32 MaxSpawnCount , float MinScaleValue , float MaxScaleValue)
 {
-	int32 NumToSpawn = FMath::RandRange(MinSpawnCount, MaxSpawnCount);
-	
+	return RandomlyPlaceObjects(ToSpawn, MinSpawnCount, MaxSpawnCount, MinScaleValue, MaxScaleValue);
+}
+
+TArray<APawn*> ATile::PlaceAIPawns(TSubclassOf<APawn> ToSpawn, int32 MinSpawnCount, int32 MaxSpawnCount)
+{
+
+	auto NewPawns = RandomlyPlaceObjects(ToSpawn, MinSpawnCount, MaxSpawnCount, 1.0f, 1.0f);
+	for (APawn* Pawn : NewPawns)
+	{
+		Pawn->SpawnDefaultController();
+		Pawn->Tags.Add(FName("Enemy"));
+	}
+	return NewPawns;
+}
+
+
+template<class T>
+inline TArray<T*> ATile::RandomlyPlaceObjects(TSubclassOf<T> ToSpawn, int32 MinSpawnCount, int32 MaxSpawnCount, float MinScaleValue, float MaxScaleValue)
+{
+	TArray<T*> NewObjects;
 	//Get Actor Length
-	auto TempActor = GetWorld()->SpawnActor<AActor>(ToSpawn);
+	auto SpawnParameters = FActorSpawnParameters();
+	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	auto TempActor = GetWorld()->SpawnActor<T>(ToSpawn, SpawnParameters);
 	auto Bounds = TempActor->GetComponentsBoundingBox();
 	FVector ActorSize = Bounds.GetSize();
 	float Length = FMath::Max3(ActorSize.X, ActorSize.Y, ActorSize.Z);
 	TempActor->Destroy();
-	
-	for(int32 i = 0; i < NumToSpawn; i++)
-	{
-		float ScaleValue = FMath::RandRange(MinScaleValue, MaxScaleValue);
-		float Radius = Length / 2.0f * ScaleValue;
 
-		FVector SpawnLocation;
-		if (FindEmptyLocation(SpawnLocation, Radius, 10))
+	int32 NumToSpawn = FMath::RandRange(MinSpawnCount, MaxSpawnCount);
+	for (int32 i = 0; i < NumToSpawn; i++)
+	{
+		FSpawnPosition SpawnPosition;
+		SpawnPosition.Scale = FMath::RandRange(MinScaleValue, MaxScaleValue);
+		float Radius = Length / 2.0f * SpawnPosition.Scale;
+		if (FindEmptyLocation(SpawnPosition.Location, Radius, 10))
 		{
-			FRotator Rotator = FRotator(0, FMath::RandRange(0.0f, 360.0f), 0);
-			PlaceActor(ToSpawn, SpawnLocation, Rotator, ScaleValue);
+			SpawnPosition.Rotation = FMath::RandRange(0.0f, 360.0f);
+			NewObjects.Add(Cast<T>(PlaceActor(ToSpawn, SpawnPosition)));
 		}
 	}
+
+	return NewObjects;
 }
 
-AActor* ATile::PlaceActor(TSubclassOf<AActor> ToSpawn, FVector Location, FRotator Rotation, float scale)
+AActor* ATile::PlaceActor(TSubclassOf<AActor> ToSpawn, const FSpawnPosition& Position)
 {
-	AActor* Spawned = GetWorld()->SpawnActor<AActor>(ToSpawn, Location, FRotator::ZeroRotator);
+	AActor* Spawned = GetWorld()->SpawnActor<AActor>(ToSpawn, Position.Location, FRotator::ZeroRotator);
 	Spawned->AttachToActor(this, FAttachmentTransformRules(EAttachmentRule::KeepWorld, false));
-	Spawned->SetActorRotation(Rotation);
-	Spawned->SetActorScale3D(FVector(scale, scale, scale));
+	Spawned->SetActorRotation(FRotator(0,Position.Rotation,0));
+	Spawned->SetActorScale3D(FVector(Position.Scale));
 	return Spawned;
 }
 
